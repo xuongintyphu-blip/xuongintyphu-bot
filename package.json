@@ -1,0 +1,20 @@
+{
+  "name": "xuong-in-typhu",
+  "version": "1.0.0",
+  "description": "Xưởng In Tỷ Phú - Telegram Mini App Bot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2",
+    "node-telegram-bot-api": "^0.67.0"
+  }
+}
