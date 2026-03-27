@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xưởng In Tỷ Phú</title>
+
+  <!-- Monetag -->
+  <script src='//libtl.com/sdk.js' data-zone='10793755' data-sdk='show_10793755'></script>
+
+  <!-- Telegram -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body { font-family: Arial; text-align: center; background: #111; color: white; }
+    button { padding: 12px 20px; margin: 10px; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<h2>💰 Xưởng In Tỷ Phú</h2>
+
+<p id="balance">Giấy bạc: 0</p>
+
+<button onclick="toggleSession()">🚀 START</button>
+
+<hr>
+
+<h3>Nhiệm vụ</h3>
+<button onclick="watchAd()">🎬 XEM VIDEO</button>
+
+<script>
+const API = 'https://xuongintyphu-bot-production.up.railway.app';
+
+let telegramId = null;
+let isRunning = false;
+let giayBac = 0;
+
+// ===== TELEGRAM INIT =====
+const tg = window.Telegram?.WebApp;
+
+if (tg) {
+  tg.ready();
+  tg.expand();
+
+  const user = tg.initDataUnsafe?.user;
+  if (user) {
+    telegramId = user.id;
+  } else {
+    alert("Không lấy được Telegram ID");
+  }
+}
+
+// ===== START (CÓ ADS - KHÔNG TOKEN) =====
+async function toggleSession() {
+  if (!telegramId) return alert("Chưa có telegramId");
+
+  try {
+    if (typeof show_10793755 !== 'function') {
+      alert("Ads chưa load");
+      return;
+    }
+
+    // 👉 XEM ADS
+    await show_10793755();
+
+    // 👉 START
+    const res = await fetch(API + '/api/start-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: telegramId })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      isRunning = true;
+      startMining();
+      alert("🚀 Bắt đầu đào!");
+    }
+
+  } catch (e) {
+    console.log(e);
+    alert("Bạn chưa xem quảng cáo");
+  }
+}
+
+// ===== WATCH AD (CÓ TOKEN) =====
+async function watchAd() {
+  if (!telegramId) return alert("Chưa có telegramId");
+
+  try {
+    // 👉 1. LẤY TOKEN
+    const res = await fetch(API + '/api/video-ad-start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegram_id: telegramId })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message);
+      return;
+    }
+
+    const token = data.token;
+
+    if (typeof show_10793755 !== 'function') {
+      alert("Ads chưa load");
+      return;
+    }
+
+    // 👉 2. XEM ADS
+    await show_10793755('pop');
+
+    // 👉 3. NHẬN THƯỞNG (GỬI TOKEN)
+    const reward = await fetch(API + '/api/video-ad-complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telegram_id: telegramId,
+        token: token
+      })
+    });
+
+    const rewardData = await reward.json();
+
+    if (rewardData.success) {
+      giayBac = parseFloat(rewardData.giay_bac);
+      updateUI();
+      alert(rewardData.message);
+    } else {
+      alert(rewardData.message);
+    }
+
+  } catch (e) {
+    console.log(e);
+    alert("Quảng cáo lỗi hoặc bị bỏ qua");
+  }
+}
+
+// ===== GIẢ LẬP ĐÀO =====
+function startMining() {
+  setInterval(() => {
+    if (isRunning) {
+      giayBac += 1;
+      updateUI();
+    }
+  }, 1000);
+}
+
+// ===== UI =====
+function updateUI() {
+  document.getElementById("balance").innerText = "Giấy bạc: " + giayBac;
+}
+</script>
+
+</body>
+</html>
